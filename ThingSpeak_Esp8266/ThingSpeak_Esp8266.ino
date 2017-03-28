@@ -25,6 +25,7 @@ void setup()
   Wifi.begin(9600);
   pinMode(LEDPIN, OUTPUT);      
   digitalWrite(LEDPIN, HIGH);
+  Serial.println("Setup");
   SetWifi(ssid, password, DEBUG);
   if (DEBUG)  Serial.println("Setup completed");
   digitalWrite(LEDPIN, LOW);  
@@ -46,7 +47,10 @@ void loop()
       Serial.println("Temp="+String(temp)+"*C");
     if (DEBUG) 
       Serial.println("Humidity="+String(humi)+"%");
-    ThingSpeakWrite(temp,humi, DEBUG);                                      // Write values to thingspeak
+    if(false == ThingSpeakWrite(temp,humi, DEBUG)){                                      // Write values to thingspeak
+      SetWifi(ssid, password, DEBUG);
+      return;
+    }
   }
   // thingspeak needs 15 sec delay between updates,     
   delay(60000);  
@@ -57,6 +61,7 @@ void loop()
 
 void SetWifi(String ssid, String pw, boolean DEBUG)
 {
+  Serial.println("SetWifi");
   SendData("AT+RST\r\n", 2000, DEBUG); // reset module
   SendData("AT+CIOBAUD?\r\n", 2000, DEBUG); // check baudrate (redundant)
   SendData("AT+CWMODE=3\r\n", 1000, DEBUG); // configure as access point (working mode: AP+STA)
@@ -154,6 +159,7 @@ boolean ThingSpeakWrite(float value1, float value2, boolean DEBUG){
       digitalWrite(LEDPIN, HIGH);
       delay(200);
       digitalWrite(LEDPIN, LOW);
+      SetWifi(ssid, password, DEBUG);
     }
     return false;
   }
