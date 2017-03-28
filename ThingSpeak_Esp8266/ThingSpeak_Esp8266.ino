@@ -25,7 +25,7 @@ void setup()
   Wifi.begin(9600);
   pinMode(LEDPIN, OUTPUT);      
   digitalWrite(LEDPIN, HIGH);
-  Serial.println("Setup");
+  Serial.println("--Setup--");
   SetWifi(ssid, password, DEBUG);
   if (DEBUG)  Serial.println("Setup completed");
   digitalWrite(LEDPIN, LOW);  
@@ -61,7 +61,7 @@ void loop()
 
 void SetWifi(String ssid, String pw, boolean DEBUG)
 {
-  Serial.println("SetWifi");
+  Serial.println("--SetWifi--");
   SendData("AT+RST\r\n", 2000, DEBUG); // reset module
   SendData("AT+CIOBAUD?\r\n", 2000, DEBUG); // check baudrate (redundant)
   SendData("AT+CWMODE=3\r\n", 1000, DEBUG); // configure as access point (working mode: AP+STA)
