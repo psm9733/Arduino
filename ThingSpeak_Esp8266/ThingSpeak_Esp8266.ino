@@ -14,11 +14,14 @@ SoftwareSerial Wifi =  SoftwareSerial(12, 13);  //Wifi객체생성, esp8266 rx11
 #define DUST_LEDPIN 4              //미세먼지 ILED
 
 DHT11 dht11(DHTPIN);         //온습도 센서 객체 생성!
-boolean DEBUG = false;
+int samplingTime = 280;
+int deltaTime = 40;
+int sleepTime = 9680;
+boolean DEBUG = true;
 String apiKey = "HC39Y2NQKXUV0HWW";     // ThingSpeak Apikey
 String ssid = "sangmin24";             // Wifi network SSID
 String password = "45701967";           // Wifi network password
-float temp, humi, gas, dust;
+float temp, humi, gas, dust, gasVoltage, gasDensity ,dustVoltage, dustDensity;
 //================================================================================ setup
 //            ||**Setting**||
 
@@ -27,6 +30,7 @@ void setup()
   Serial.begin(9600);
   Wifi.begin(9600);
   pinMode(LEDPIN, OUTPUT);
+  pinMode(DUST_LEDPIN,OUTPUT);
   digitalWrite(LEDPIN, HIGH);
   Serial.println("--Setup--");
   SetWifi(ssid, password, DEBUG);
@@ -41,9 +45,20 @@ void setup()
 void loop()
 {
   // Read sensor values
+  digitalWrite(DUST_LEDPIN,LOW); // power on the LED
+  delayMicroseconds(samplingTime);
   dht11.read(humi, temp);
-  gas =  analogRead(GASPIN) / 100.0;
+  gas =  analogRead(GASPIN);
+  gasVoltage = gas * 5.0 / 1024.0;
+  gasDensity = 0.17 * gasVoltage - 0.1;   //unit ppm
   dust = analogRead(DUSTPIN);
+  dustVoltage = dust * 5.0 / 1024.0;
+  dustDensity = 0.17 * dustVoltage - 0.1; //unit ug/m3
+  dustDensity *= 1000;
+  dustDensity = (dustDensity + 120)*(1 + (100 + dustDensity) / 100); //마이크로 그램으로 변환
+  delayMicroseconds(deltaTime);
+  digitalWrite(DUST_LEDPIN,HIGH); // turn the LED off
+  delayMicroseconds(sleepTime);
   if (isnan(temp) || isnan(humi)) {
     if (DEBUG)
       Serial.println("Failed to read from DHT");
@@ -57,16 +72,16 @@ void loop()
     if (DEBUG) {
       Serial.println("Temp=" + String(temp) + "℃");
       Serial.println("Humidity=" + String(humi) + "%");
-      Serial.println("Gas=" + String(gas) + "ppm'");
-      Serial.println("Fine Dust=" + String(dust) + "ppm");
+      Serial.println("Gas=" + String(gasDensity) + "ppm");
+      Serial.println("Fine Dust=" + String(dustDensity) + "ug/m3");
     }
-    if (false == ThingSpeakWrite(temp, humi, gas, dust , DEBUG)) {                                   // Write values to thingspeak
+    if (false == ThingSpeakWrite(temp, humi, gasDensity, dustDensity , DEBUG)) {                                   // Write values to thingspeak
       
       return;
     }
   }
-  // thingspeak needs 15 sec delay between updates,
-  delay(60000);
+  // thingspeak needs 30 sec delay between updates,
+  delay(1000);
 }
 
 
@@ -107,7 +122,7 @@ String SendData(String command, const int timeout, boolean DEBUG) {
   return response;
 }
 
-String Get4DString(String ApiKey, int Field1 = 0, int Field2 = 0, int Field3 = 0, int Field4 = 0) {
+String Get4DString(String ApiKey, float Field1 = 0, float Field2 = 0, float Field3 = 0, float Field4 = 0) {
   String temp_str = "GET /update?api_key=";   // prepare GET string
   temp_str += ApiKey;
   temp_str += "&field1=";
@@ -146,7 +161,6 @@ boolean ThingSpeakWrite(float value1, float value2, float value3, float value4, 
   if (DEBUG)
     Serial.println(cmd);
   delay(100);
-  Serial.print(GetStr);
   if (Wifi.find(">"))
   {
     // Send Data String
