@@ -1,10 +1,11 @@
 #include <SoftwareSerial.h>
 #include <DHT11.h>
 
-#define LEDPIN 1
+#define ALERT_LEDPIN 1
+#define LEDPIN 11
 
 SoftwareSerial Wifi =  SoftwareSerial(12,13);   //Wifi객체생성, esp8266 rx11, tx12(NANO), esp8266 rx12, tx13(UNO)
-int Field_Index = 2;
+int Field_Index = 5;
 boolean DEBUG = true;
 String apiKey = "HC39Y2NQKXUV0HWW";     // ThingSpeak Apikey
 String Channel_ID = "247820";           // ThingSpeak Channel ID
@@ -16,7 +17,7 @@ void setup() {
   // put your setup code here, to run once:
   Serial.begin(9600); 
   Wifi.begin(9600);
-  //pinMode(LEDPIN, OUTPUT);
+  pinMode(LEDPIN, OUTPUT);
   Serial.println("--Setup--");
   SetWifi(ssid, password, DEBUG);
   if (DEBUG)  
@@ -27,7 +28,7 @@ void loop() {
   if (false == ThingSpeakWrite(Field_Index, DEBUG)) { // Read values to thingspeak
 
   }
-
+  delay(15000);
 }
 
 
@@ -112,12 +113,16 @@ boolean ThingSpeakWrite(int Field_Index, boolean DEBUG){
       //delay(200);
       //digitalWrite(LEDPIN, LOW);
     }
-    if(Wifi.find("+IPD,5:")){
+    if(Wifi.find("+IPD,1:")){                    //find로 데이터를 받음, ,1은 데이터의 문자열 길이
       String data=Wifi.readString();
-      Serial.print("getdata = ");
-      Serial.println(data);
-      int num=(data[0]-48)*10;
-      num+=(data[1]-48);
+      if (DEBUG){
+        Serial.print("getdata = ");
+        Serial.println(data[0]);
+      }
+      if (data[0] == 49)                         //49 = "1"
+        digitalWrite(LEDPIN, 1);
+      else
+        digitalWrite(LEDPIN, 0);
     }
   }
   else
