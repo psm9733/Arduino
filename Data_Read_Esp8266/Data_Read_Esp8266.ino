@@ -1,4 +1,6 @@
-/*  Updated 2017-04-13
+
+
+/*  Updated 2017-05-01
     Created by Sangmin Park
     Project(Sensor Part)
     Arduino -> Esp8266 -> ThingSpeak -> Esp8266 ->Arduino -> Sensor
@@ -6,15 +8,17 @@
 #include <SoftwareSerial.h>
 #include <DHT11.h>
 
-#define ALERT_LEDPIN 10
+#define ALERT_LEDPIN 6
+#define FANPIN 9
+#define FANENA_PIN 10
 #define LEDPIN 11
-
 SoftwareSerial Wifi =  SoftwareSerial(12,13);   //Wifi객체생성, esp8266 rx11, tx12(NANO), esp8266 rx12, tx13(UNO)
 int Field_Index = 1;
 boolean DEBUG = true;
-String apiKey1 = "09NTO8QMWG48LM2M";      // ThingSpeak myhome_ctrl Apikey
-String apiKey2 = "I07Y6U9TP4JMYL3P";      // ThingSpeak myhome_status Apikey
-String Channel_ID = "257666";             // ThingSpeak Channel ID
+String apiKey1 = "HC39Y2NQKXUV0HWW";      // ThingSpeak Led_ctrl Apikey
+String apiKey2 = "I07Y6U9TP4JMYL3P";      // ThingSpeak Fan_ctrl Apikey
+String Channel_ID1 = "257666";             // ThingSpeak Channel ID
+String Channel_ID2 = "257667";
 String ssid = "team9";                    // Wifi network SSID
 String password ="6c700644";              // Wifi network password
 
@@ -23,7 +27,12 @@ void setup() {
   // put your setup code here, to run once:
   Serial.begin(9600); 
   Wifi.begin(9600);
+  
+  pinMode(ALERT_LEDPIN, OUTPUT);
+  pinMode(FANPIN, OUTPUT);
+  pinMode(FANENA_PIN, OUTPUT);
   pinMode(LEDPIN, OUTPUT);
+  digitalWrite(FANENA_PIN, HIGH);
   Serial.println("--Setup--");
   SetWifi(ssid, password, DEBUG);
   if (DEBUG)  
@@ -31,7 +40,11 @@ void setup() {
 }
 
 void loop() {
-  if (false == ThingSpeakWrite(Field_Index, DEBUG)) { // Read values to thingspeak
+  if (false == ThingSpeakWrite(Field_Index, DEBUG, apiKey1, Channel_ID1, LEDPIN)) { // Read values to thingspeak
+
+  }
+
+  if (false == ThingSpeakWrite(Field_Index, DEBUG, apiKey2, Channel_ID2, FANPIN)) { // Read values to thingspeak
 
   }
 }
@@ -82,7 +95,7 @@ void SetWifi(String ssid, String pw, boolean DEBUG)
   SendData("AT+CIPSERVER=1,80\r\n", 1000, DEBUG); // turn on server on port 80
 }
 
-boolean ThingSpeakWrite(int Field_Index, boolean DEBUG){
+boolean ThingSpeakWrite(int Field_Index, boolean DEBUG, String apikey, String Channel_ID,int Pin){
   String cmd = "AT+CIPSTART=\"TCP\",\"";                  // TCP connection
   cmd += "184.106.153.149";                               // api.thingspeak.com
   cmd += "\",80";
@@ -96,7 +109,7 @@ boolean ThingSpeakWrite(int Field_Index, boolean DEBUG){
     return false;
   }
   
-  String GetStr = GetDString(apiKey1, Channel_ID, Field_Index);  
+  String GetStr = GetDString(apikey, Channel_ID, Field_Index);  
   // Send data length
   cmd = "AT+CIPSEND=";
   cmd += String(GetStr.length());
@@ -123,9 +136,9 @@ boolean ThingSpeakWrite(int Field_Index, boolean DEBUG){
         Serial.println(data[2]);                //data[2] = data
       }
       if (data[2] == 49)                         //49 = "1"
-        digitalWrite(LEDPIN, 1);
+        digitalWrite(Pin, HIGH);
       else
-        digitalWrite(LEDPIN, 0);
+        digitalWrite(Pin, LOW);
     }
   }
   else
@@ -149,4 +162,5 @@ boolean ThingSpeakWrite(int Field_Index, boolean DEBUG){
     return false;
   }
   return true;
-}
+} 
+
