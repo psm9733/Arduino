@@ -27,14 +27,16 @@ void setup() {
   // put your setup code here, to run once:
   Serial.begin(9600); 
   Wifi.begin(9600);
-  
   pinMode(ALERT_LEDPIN, OUTPUT);
   pinMode(FANPIN, OUTPUT);
   pinMode(FANENA_PIN, OUTPUT);
   pinMode(LEDPIN, OUTPUT);
   digitalWrite(FANENA_PIN, HIGH);
   Serial.println("--Setup--");
+  pinMode(FANPIN, OUTPUT);
+  digitalWrite(ALERT_LEDPIN, HIGH);
   SetWifi(ssid, password, DEBUG);
+  digitalWrite(ALERT_LEDPIN, LOW);
   if (DEBUG)  
     Serial.println("Setup completed\n");
 }
@@ -125,9 +127,9 @@ boolean ThingSpeakWrite(int Field_Index, boolean DEBUG, String apikey, String Ch
       Serial.println("Success Send Data");
       Serial.print("Contents : ");
       Serial.print(GetStr); 
-      //digitalWrite(LEDPIN, HIGH);
-      //delay(200);
-      //digitalWrite(LEDPIN, LOW);
+      digitalWrite(ALERT_LEDPIN, HIGH);
+      delay(200);
+      digitalWrite(ALERT_LEDPIN, LOW);
     }
     if(Wifi.find("+IPD,")){                       //Wifi.find("+IPD,") => "tempnumber:data"
       String data=Wifi.readString();
@@ -145,15 +147,15 @@ boolean ThingSpeakWrite(int Field_Index, boolean DEBUG, String apikey, String Ch
   {
     Wifi.println("AT+CIPCLOSE");
     // alert user
-      /*
-      digitalWrite(LEDPIN, HIGH);
+      
+      digitalWrite(ALERT_LEDPIN, HIGH);
       delay(200);
-      digitalWrite(LEDPIN, LOW);
+      digitalWrite(ALERT_LEDPIN, LOW);
       delay(200);
-      digitalWrite(LEDPIN, HIGH);
+      digitalWrite(ALERT_LEDPIN, HIGH);
       delay(200);
-      digitalWrite(LEDPIN, LOW);
-      */
+      digitalWrite(ALERT_LEDPIN, LOW);
+      
     if (DEBUG){
       Serial.println("Failed Read Data");
       Serial.println("AT+CIPCLOSE\n");
