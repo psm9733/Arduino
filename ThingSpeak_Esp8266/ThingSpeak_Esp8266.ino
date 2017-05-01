@@ -1,4 +1,4 @@
-/*  Updated 2017-03-27
+/*  Updated 2017-05-01
     Created by Sangmin Park
     Project(Sensor Part)
     Sensor -> Arduino -> Esp8266 -> ThingSpeak
@@ -19,8 +19,8 @@ int deltaTime = 40;
 int sleepTime = 9680;
 boolean DEBUG = true;
 String apiKey = "HC39Y2NQKXUV0HWW";     // ThingSpeak Apikey
-String ssid = "sangmin24";             // Wifi network SSID
-String password = "45701967";           // Wifi network password
+String ssid = "team9";             // Wifi network SSID
+String password = "6c700644";           // Wifi network password
 float temp, humi, gas, dust, gasVoltage, gasDensity ,dustVoltage, dustDensity;
 //================================================================================ setup
 //            ||**Setting**||
@@ -55,7 +55,7 @@ void loop()
   dustVoltage = dust * 5.0 / 1024.0;
   dustDensity = 0.17 * dustVoltage - 0.1; //unit ug/m3
   dustDensity *= 1000;
-  dustDensity = (dustDensity + 120)*(1 + (100 + dustDensity) / 100); //마이크로 그램으로 변환
+  dustDensity = (dustDensity + 120); //마이크로 그램으로 변환
   delayMicroseconds(deltaTime);
   digitalWrite(DUST_LEDPIN,HIGH); // turn the LED off
   delayMicroseconds(sleepTime);
@@ -81,7 +81,7 @@ void loop()
     }
   }
   // thingspeak needs 30 sec delay between updates,
-  delay(1000);
+  delay(15000);
 }
 
 
@@ -188,6 +188,7 @@ boolean ThingSpeakWrite(float value1, float value2, float value3, float value4, 
     if (DEBUG) {
       Serial.println("Failed Send Data");
       Serial.println("AT+CIPCLOSE");
+      Serial.println("");
     }
     return false;
   }
