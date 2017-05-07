@@ -12,12 +12,13 @@ SoftwareSerial Wifi =  SoftwareSerial(12, 13);  //Wifi객체생성, esp8266 rx11
 #define DUSTPIN A2             //미세먼지센서 아날로그 핀
 #define LEDPIN 3              //신호 알림 LED
 #define DUST_LEDPIN 4              //미세먼지 ILED
+#define led_delay 100
 
 DHT11 dht11(DHTPIN);         //온습도 센서 객체 생성!
 int samplingTime = 280;
 int deltaTime = 40;
 int sleepTime = 9680;
-boolean DEBUG = true;
+boolean DEBUG = false;
 String apiKey = "HC39Y2NQKXUV0HWW";     // ThingSpeak Apikey
 String ssid = "team9";             // Wifi network SSID
 String password = "6c700644";           // Wifi network password
@@ -165,7 +166,7 @@ boolean ThingSpeakWrite(float value1, float value2, float value3, float value4, 
   {
     // Send Data String
     digitalWrite(LEDPIN, HIGH);
-    delay(200);
+    delay(led_delay);
     digitalWrite(LEDPIN, LOW);
     Wifi.print(GetStr);
     if (DEBUG) {
@@ -179,11 +180,11 @@ boolean ThingSpeakWrite(float value1, float value2, float value3, float value4, 
     Wifi.println("AT+CIPCLOSE");
     // alert user
       digitalWrite(LEDPIN, HIGH);
-      delay(200);
+      delay(led_delay);
       digitalWrite(LEDPIN, LOW);
-      delay(200);
+      delay(led_delay);
       digitalWrite(LEDPIN, HIGH);
-      delay(200);
+      delay(led_delay);
       digitalWrite(LEDPIN, LOW);
     if (DEBUG) {
       Serial.println("Failed Send Data");
