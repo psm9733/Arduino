@@ -1,0 +1,24 @@
+[33m5f97493[m Update README.md
+[33m46e23b5[m Update README.md
+[33mdaa7ca5[m Modified : Circuit Diagram
+[33m28f9155[m Modified png->jpg and READMD.md is modified
+[33mf3293e4[m Modified : README.md
+[33m2175c0f[m Add : Circuit diagram Actuator Part
+[33mbdf028b[m Update README.md
+[33mf57bc36[m Add : Thread library insert.
+[33ma0b17e5[m filled in the license for thread.
+[33m490fe8b[m Add Circuit Diagram
+[33m57a8286[m Modified : circuit diagram
+[33mcdb04c4[m Modified : circuit diagram
+[33m525e895[m Modified : readData alert led
+[33m58a16af[m Modified : ReadData
+[33m8396ff8[m Modify : fine dust
+[33mb26485b[m Modifiy : Wifi.find('+IPD, 1') -> Wifi.find('+IPD,')
+[33m4971be4[m Add : Led Control
+[33m85371d8[m Add File : Data_read
+[33m2f08fb6[m Modified : fine dust unit(mg->ng), find dust data interpolation
+[33m8c2ab46[m Modified: Add gas, fine dust sensor
+[33mb6a5ab7[m Modified : Add comment
+[33mf4612b8[m Modified : Add README, Image(sensor Part)
+[33m46490e4[m Modified : Add Reconnect Wifi
+[33m01606aa[m Commit: led 0.2sec +

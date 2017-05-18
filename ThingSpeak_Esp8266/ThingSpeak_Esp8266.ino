@@ -1,8 +1,13 @@
-/*  Updated 2017-05-01
+/*  Updated 2017-05-19
+
     Created by Sangmin Park
+
     Project(Sensor Part)
+
     Sensor -> Arduino -> Esp8266 -> ThingSpeak
+
 */
+
 #include <SoftwareSerial.h>
 #include <DHT11.h>
 SoftwareSerial Wifi =  SoftwareSerial(12, 13);  //Wifi객체생성, esp8266 rx11, tx12(NANO), esp8266 rx12, tx13(UNO)
@@ -24,8 +29,8 @@ String ssid = "team9";             // Wifi network SSID
 String password = "6c700644";           // Wifi network password
 float temp, humi, gas, dust, gasVoltage, gasDensity ,dustVoltage, dustDensity;
 //================================================================================ setup
-//            ||**Setting**||
 
+//            ||**Setting**||
 void setup()
 {
   Serial.begin(9600);
@@ -39,9 +44,8 @@ void setup()
     Serial.println("Setup completed");
   digitalWrite(LEDPIN, LOW);
 }
-
-
 // ====================================================================== loop
+
 //             ||**Main Loop**||
 void loop()
 {
@@ -52,6 +56,7 @@ void loop()
   gas =  analogRead(GASPIN);
   gasVoltage = gas * 5.0 / 1024.0;
   gasDensity = 0.17 * gasVoltage - 0.1;   //unit ppm
+  gasDensity += 0.01;
   dust = analogRead(DUSTPIN);
   dustVoltage = dust * 5.0 / 1024.0;
   dustDensity = 0.17 * dustVoltage - 0.1; //unit ug/m3
@@ -76,18 +81,12 @@ void loop()
       Serial.println("Gas=" + String(gasDensity) + "ppm");
       Serial.println("Fine Dust=" + String(dustDensity) + "ug/m3");
     }
-    if (false == ThingSpeakWrite(temp, humi, gasDensity, dustDensity , DEBUG)) {                                   // Write values to thingspeak
-      
+    if (false == ThingSpeakWrite(temp, humi, gasDensity, dustDensity , DEBUG))                                  // Write values to thingspeak
       return;
-    }
   }
-  // thingspeak needs 30 sec delay between updates,
-  delay(15000);
 }
 
-
 //            || **Methods** ||
-
 void SetWifi(String ssid, String pw, boolean DEBUG)
 {
   Serial.println("--SetWifi--");
@@ -102,6 +101,7 @@ void SetWifi(String ssid, String pw, boolean DEBUG)
   SendData("AT+CIPSERVER=1,80\r\n", 1000, DEBUG); // turn on server on port 80
   digitalWrite(LEDPIN, LOW);
 }
+
 //========================================================================
 
 String SendData(String command, const int timeout, boolean DEBUG) {
@@ -117,9 +117,7 @@ String SendData(String command, const int timeout, boolean DEBUG) {
     }
   }
   if (DEBUG)
-  {
     Serial.print(response);
-  }
   return response;
 }
 
@@ -139,7 +137,6 @@ String Get4DString(String ApiKey, float Field1 = 0, float Field2 = 0, float Fiel
 }
 
 //========================================================================
-
 boolean ThingSpeakWrite(float value1, float value2, float value3, float value4, boolean DEBUG) {
   String cmd = "AT+CIPSTART=\"TCP\",\"";                  // TCP connection
   cmd += "184.106.153.149";                               // api.thingspeak.com
@@ -153,7 +150,6 @@ boolean ThingSpeakWrite(float value1, float value2, float value3, float value4, 
       Serial.println("AT+CIPSTART error");
     return false;
   }
-
   String GetStr = Get4DString(apiKey, value1, value2, value3, value4);      //data temp, humi, gas, fine dust(4개)
   // Send data length
   cmd = "AT+CIPSEND=";

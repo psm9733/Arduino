@@ -1,33 +1,53 @@
 
-/*  Updated 2017-05-08
-    Created by Sangmin Park
-    Project(Sensor Part)
-    Arduino -> Esp8266 -> ThingSpeak -> Esp8266 ->Arduino -> Sensor
-    reference library Thread -> https://github.com/ivanseidel/ArduinoThread
+/*  Updated 2017-05-19
 
+    Created by Sangmin Park
+
+    Project(Sensor Part)
+
+    Arduino -> Esp8266 -> ThingSpeak -> Esp8266 ->Arduino -> Sensor
+
+    reference library Thread -> https://github.com/ivanseidel/ArduinoThread
 */
 
 /* Licence
+
 The MIT License (MIT)
 
 Copyright (c) 2015 Ivan Seidel
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
+
 of this software and associated documentation files (the "Software"), to deal
+
 in the Software without restriction, including without limitation the rights
+
 to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+
 copies of the Software, and to permit persons to whom the Software is
+
 furnished to do so, subject to the following conditions:
 
+ 
+
 The above copyright notice and this permission notice shall be included in all
+
 copies or substantial portions of the Software.
 
+ 
+
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+
 AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+
 SOFTWARE.
 
  */
@@ -41,9 +61,11 @@ SOFTWARE.
 #define FANENA_PIN 10
 #define LEDPIN 11
 #define led_delay 50
+
 SoftwareSerial Wifi =  SoftwareSerial(12, 13);  //Wifi객체생성, esp8266 rx11, tx12(NANO), esp8266 rx12, tx13(UNO)
+
 int Field_Index = 1;
-boolean DEBUG = false;
+boolean DEBUG = true;
 String apiKey1 = "HC39Y2NQKXUV0HWW";      // ThingSpeak Led_ctrl Apikey
 String apiKey2 = "I07Y6U9TP4JMYL3P";      // ThingSpeak Fan_ctrl Apikey
 String Channel_ID1 = "257666";             // ThingSpeak Channel ID
@@ -51,6 +73,7 @@ String Channel_ID2 = "257667";
 String ssid = "team9";                    // Wifi network SSID
 String password = "6c700644";             // Wifi network password
 ThreadController controll = ThreadController();
+
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(9600);
@@ -59,6 +82,7 @@ void setup() {
   pinMode(FANPIN, OUTPUT);
   pinMode(FANENA_PIN, OUTPUT);
   pinMode(LEDPIN, OUTPUT);
+  digitalWrite(LEDPIN, HIGH);
   digitalWrite(FANENA_PIN, HIGH);
   Serial.println("--Setup--");
   pinMode(FANPIN, OUTPUT);
@@ -74,6 +98,8 @@ void setup() {
   controll.add(&LedThread);
   controll.add(&FanThread);
   digitalWrite(ALERT_LEDPIN, LOW);
+  digitalWrite(LEDPIN, LOW);
+  digitalWrite(FANENA_PIN, LOW);
   if (DEBUG)
     Serial.println("Setup completed\n");
 }
@@ -81,9 +107,7 @@ void setup() {
 void loop() {
   controll.run();
 }
-
 //========================================================================
-
 String SendData(String command, const int timeout, boolean DEBUG) {
   String response = "";
   Wifi.print(command); // send the read character to the esp8266
@@ -115,6 +139,7 @@ String GetDString(String ApiKey, String Channel_ID, int Field_Index = 0) {
 }
 
 //========================================================================
+
 void SetWifi(String ssid, String pw, boolean DEBUG)
 {
   Serial.println("--SetWifi--");
@@ -141,7 +166,6 @@ boolean ThingSpeakWrite(int Field_Index, boolean DEBUG, String apikey, String Ch
       Serial.println("AT+CIPSTART error");
     return false;
   }
-
   String GetStr = GetDString(apikey, Channel_ID, Field_Index);
   // Send data length
   cmd = "AT+CIPSEND=";
@@ -167,6 +191,7 @@ boolean ThingSpeakWrite(int Field_Index, boolean DEBUG, String apikey, String Ch
       if (DEBUG) {
         Serial.print("getdata = ");
         Serial.println(data[2]);                //data[2] = data
+        Serial.println("\n"); 
       }
       if (data[2] == 49)                         //49 = "1"
         digitalWrite(Pin, HIGH);
@@ -185,31 +210,27 @@ boolean ThingSpeakWrite(int Field_Index, boolean DEBUG, String apikey, String Ch
     digitalWrite(ALERT_LEDPIN, HIGH);
     delay(led_delay);
     digitalWrite(ALERT_LEDPIN, LOW);
-
     if (DEBUG) {
       Serial.println("Failed Read Data");
       Serial.println("AT+CIPCLOSE\n");
-
     }
+    delay(500);
     return false;
   }
+  delay(500);
   return true;
 }
-
 // callback for LedThread
 void LedCallback(){
   if(DEBUG)
     Serial.println("Led Thread Operating");
   if (false == ThingSpeakWrite(Field_Index, DEBUG, apiKey1, Channel_ID1, LEDPIN)) { // Read values to thingspeak
-  
   }
 }
-
 // callback for FanThread
 void FanCallback(){
   if(DEBUG)
     Serial.println("Fan Thread Operating");
-  if (false == ThingSpeakWrite(Field_Index, DEBUG, apiKey2, Channel_ID2, FANPIN)) { // Read values to thingspeak
-
+  if (false == ThingSpeakWrite(Field_Index, DEBUG, apiKey2, Channel_ID2, FANENA_PIN)) { // Read values to thingspeak
   }
 }
