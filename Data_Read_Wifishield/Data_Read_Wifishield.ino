@@ -56,13 +56,13 @@ SOFTWARE.
 #include <Thread.h>
 #include <ThreadController.h>
 #define ALERT_LEDPIN 6
+#define LED_PIN 5
 #define FAN_PIN 9
 #define FANENA_PIN 10
-#define LED_PIN 11
 #define led_delay 50
-#define wifi_delay 200
-#define Thread_interval1 100
-#define Thread_interval2 100
+#define wifi_delay 2000
+#define Thread_interval1 0
+#define Thread_interval2 0
 #define updateThingSpeakInterval 0
 // Local Network Settings
 char ssid[] = "team9";  // your network SSID (name)
@@ -135,14 +135,16 @@ boolean getdata(int Field_Index, boolean DEBUG, String apiKey, String Channel_ID
   if (client.available()) {
     char c = client.read();
     if(DEBUG == true){
-      if(Pin == 10){
+      if(Pin == FANENA_PIN){
         Serial.println("Fan");
-      }else if(Pin == 11){
+      }else if(Pin == LED_PIN){
         Serial.println("LED");
       }
       if(c == 49){
+        digitalWrite(Pin, HIGH);
         Serial.println("ON");
       }else{
+        digitalWrite(Pin, LOW);
         Serial.println("OFF");
       }
     }
@@ -164,30 +166,69 @@ boolean getdata(int Field_Index, boolean DEBUG, String apiKey, String Channel_ID
   lastConnected = client.connected();
   delay(1000);
 }
-// callback for LedThread
-void LedCallback(){
+// callback for LedThread                                       //LED_callback이지만 getdata가 두번 진행되야하며 스레드가 번갈아가며 getdata를 하면서 
+void LedCallback(){                                             //Fan과 LED가 뒤봐껴 Pin을 Fan_callback과 LED_callback위치를 바꿔 매개변수에 대입하였다.
   if(semaphore == 1){
     return;
   }
   if(DEBUG)
-    Serial.println("Led Thread Operating");
-  if (false == getdata(Field_Index, DEBUG, apiKey1, Channel_ID1, LED_PIN)) { // Read values to thingspeak
+    Serial.println("Fan Thread Operating");
+  if (false == getdata(Field_Index, DEBUG, apiKey1, Channel_ID1, FANENA_PIN)) { // Read values to thingspeak
     if(DEBUG == true){
       Serial.println("getdata Error");
+      digitalWrite(ALERT_LEDPIN, HIGH);
+      delay(led_delay);
+      digitalWrite(ALERT_LEDPIN, LOW);
+      delay(led_delay);
+      digitalWrite(ALERT_LEDPIN, HIGH);
+      delay(led_delay);
+      digitalWrite(ALERT_LEDPIN, LOW);
     }
   }
+  if (false == getdata(Field_Index, DEBUG, apiKey1, Channel_ID1, FANENA_PIN)) { // Read values to thingspeak
+    if(DEBUG == true){
+      Serial.println("getdata Error");
+      digitalWrite(ALERT_LEDPIN, HIGH);
+      delay(led_delay);
+      digitalWrite(ALERT_LEDPIN, LOW);
+      delay(led_delay);
+      digitalWrite(ALERT_LEDPIN, HIGH);
+      delay(led_delay);
+      digitalWrite(ALERT_LEDPIN, LOW);
+    }
+  }
+  delay(wifi_delay);
   semaphore = 1;
 }
 
-void FanCallback(){
-  if(semaphore == 0){
+void FanCallback(){                         //Fan_callback이지만 getdata가 두번 진행되야하며 스레드가 번갈아가며 getdata를 하면서 
+  if(semaphore == 0){                       //Fan과 LED가 뒤봐껴 Pin을 Fan_callback과 LED_callback위치를 바꿔 매개변수에 대입하였다.
     return;
   }
   if(DEBUG)
-    Serial.println("Fan Thread Operating");
-  if (false == getdata(Field_Index, DEBUG, apiKey2, Channel_ID2, FANENA_PIN)) { // Read values to thingspeak
+    Serial.println("Led Thread Operating");
+  if (false == getdata(Field_Index, DEBUG, apiKey2, Channel_ID2, LED_PIN)) { // Read values to thingspeak
     if(DEBUG == true){
       Serial.println("getdata Error");
+      digitalWrite(ALERT_LEDPIN, HIGH);
+      delay(led_delay);
+      digitalWrite(ALERT_LEDPIN, LOW);
+      delay(led_delay);
+      digitalWrite(ALERT_LEDPIN, HIGH);
+      delay(led_delay);
+      digitalWrite(ALERT_LEDPIN, LOW);
+    }
+  }
+  if (false == getdata(Field_Index, DEBUG, apiKey2, Channel_ID2, LED_PIN)) { // Read values to thingspeak   
+    if(DEBUG == true){
+      Serial.println("getdata Error");
+      digitalWrite(ALERT_LEDPIN, HIGH);
+      delay(led_delay);
+      digitalWrite(ALERT_LEDPIN, LOW);
+      delay(led_delay);
+      digitalWrite(ALERT_LEDPIN, HIGH);
+      delay(led_delay);
+      digitalWrite(ALERT_LEDPIN, LOW);
     }
   }
   delay(wifi_delay);
@@ -197,6 +238,13 @@ void FanCallback(){
 void setup() {
   // Start Serial for debugging on the Serial Monitor
   Serial.begin(9600);
+  pinMode(ALERT_LEDPIN, OUTPUT);
+  pinMode(FAN_PIN, OUTPUT);
+  pinMode(FANENA_PIN, OUTPUT);
+  pinMode(LED_PIN, OUTPUT);
+  digitalWrite(ALERT_LEDPIN, HIGH);
+  digitalWrite(LED_PIN, HIGH);
+  digitalWrite(FANENA_PIN, HIGH);
   Thread LedThread = Thread();
   Thread FanThread = Thread();
   LedThread.onRun(LedCallback);
@@ -223,6 +271,9 @@ void setup() {
   }
   // you're connected now, so print out the status:
   printWifiStatus();
+  digitalWrite(ALERT_LEDPIN, LOW);
+  digitalWrite(LED_PIN, LOW);
+  digitalWrite(FANENA_PIN, LOW);
 }
 
 void loop() {
