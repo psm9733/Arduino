@@ -1,11 +1,10 @@
-
 /*  Created 2017-05-22
 
     Created by Sangmin Park
 
     Project(Sensor Part)
 
-    Arduino -> Esp8266 -> ThingSpeak -> Esp8266 ->Arduino -> Sensor
+    Arduino -> WifiShield -> ThingSpeak -> WifiShield ->Arduino -> Sensor
 
     reference library Thread -> https://github.com/ivanseidel/ArduinoThread
 */
@@ -55,10 +54,10 @@ SOFTWARE.
 #include <WiFi.h>
 #include <Thread.h>
 #include <ThreadController.h>
-#define ALERT_LEDPIN 6
+#define FAN_PIN 3
+#define FANENA_PIN 4
 #define LED_PIN 5
-#define FAN_PIN 9
-#define FANENA_PIN 10
+#define ALERT_LEDPIN 6
 #define led_delay 50
 #define wifi_delay 2000
 #define Thread_interval1 0
